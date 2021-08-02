@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-app
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: k8s-app
+            port:
+              number: 5000
+        path: /
+        pathType: ImplementationSpecific
