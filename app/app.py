@@ -17,12 +17,17 @@ def whoami():
 def db():
   try:
     with connect(
-      host='db.mysql'
+      host=os.getenv('DB_HOST', default='localhost'),
+      port=os.getenv('DB_PORT', default=3306),
+      user=os.getenv('DB_USER'),
+      password=os.getenv('DB_PASSWORD')
     ) as connection:
-      #TODO: return something
-      pass
+      if connection.is_connected():
+        db_Info = connection.get_server_info()
+        return f"Connected to MySQL Server version {db_Info}"
   except Error as e:
     print(e)
+    return 'Unable to connect to DB'
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
