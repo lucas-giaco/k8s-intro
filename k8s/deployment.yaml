@@ -16,8 +16,13 @@ spec:
     spec:
       containers:
       - image: lucasgiaco91/k8s-app
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         name: k8s-app
         ports:
         - containerPort: 5000
           protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: db-info
+        - secretRef:
+            name: db-credentials
