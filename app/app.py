@@ -5,9 +5,9 @@ from flask import Flask
 
 app = Flask(__name__)
 
-@app.route("/exit")
+@app.route("/fail")
 def exit():
-  return os._exit(0)
+  return os._exit(1)
 
 @app.route("/whoami")
 def whoami():
