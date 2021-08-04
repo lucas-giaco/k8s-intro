@@ -41,6 +41,15 @@ kubectl apply -f assets/ingress-controller.yaml
 This command will create all the necessary resources to handle external requests and forward them to
 the proper service.
 
+### Exposing our app
+
+So the ingress-controller will route the traffic, but we need to tell it where to route it. How an
+ingress work is beyond the scope of this guide. We'll just run this command
+
+```bash
+kubectl apply -f k8s/ingress.yaml
+```
+
 ## Building our app
 
 We'll build a really simple python app with 3 endpoints:
@@ -57,6 +66,15 @@ If you want to build your image locally please run this command
 
 ```bash
 docker build . -t k8s-app
+```
+
+## Configuring our app
+
+
+
+```bash
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
 ```
 
 ## Running our app
@@ -95,10 +113,7 @@ kubectl apply -f k8s/pod.yaml
 It's important to notice the `restartPolicy: Always` line in the pod declaration.
 
 ```bash
-kubectl apply -f assets/configmap.yaml
-kubectl apply -f assets/secret.yaml
-kubectl apply -f assets/svc.yaml
-kubectl apply -f assets/ingress.yaml
+kubectl apply -f k8s/svc.yaml
 ```
 
 ### Deployment
@@ -112,7 +127,7 @@ kubectl apply -f k8s/deployment.yaml
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm install mysql bitnami/mysql -n db --create-namespace --wait
+helm install mysql bitnami/mysql --set auth.rootPassword=R00t! -n db --create-namespace --wait
 ```
 
 This may take several minutes before being ready
