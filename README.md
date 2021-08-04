@@ -70,17 +70,37 @@ docker build . -t k8s-app
 
 ## Configuring our app
 
+To decouple your app from any environment-specific config it's a
+[best practice](https://12factor.net/config) to store these configs in the environment itself
+and not in the app. Kubernetes offers two options for this.
 
+### ConfigMap
+
+As the name says, is a key value map in which you can store variables or files. Kubernetes saves
+this object in plain text. We'll store our DB host and port in a ConfigMap
 
 ```bash
 kubectl apply -f k8s/configmap.yaml
+```
+
+### Secret
+
+Secrets are similar to [ConfigMaps](#ConfigMap) but are specifically intended to hold confidential
+data. Kubernetes offers different
+[secret types](https://kubernetes.io/docs/concepts/configuration/secret/#secret-types) to store
+different kind of information. We'll store our DB credentials in a secret.
+
+```bash
 kubectl apply -f k8s/secret.yaml
 ```
 
+> :warning: **WARNING**: These objects are stored base 64 encoded in the Kubernetes DB but this
+feature itself doesn't provide any kind of secrecy nor encryption.
+
 ## Running our app
 
-After our app is built we need to run it somewhere. Let's go through different ways of doing so and
-see the benefits of using a container orchestrator.
+After our app is built and we have all the required configs we need to run it somewhere. Let's go
+through different ways of doing so and see the benefits of using a container orchestrator.
 
 ### Single container outside k8s
 
@@ -110,16 +130,31 @@ containers that runs simultaneously. Let's run our container inside a pod and se
 kubectl apply -f k8s/pod.yaml
 ```
 
-It's important to notice the `restartPolicy: Always` line in the pod declaration.
+It's important to notice the `restartPolicy: Always` line in the pod declaration. This line will
+tell Kubernetes to restart our container any time its not running.
+
+Now if we curl our app at `localhost/fail` as we did in the previous section we'll see that our app
+still fails but this time its being automatically restarted every time.
 
 ```bash
-kubectl apply -f k8s/svc.yaml
+❯ kubectl get po
+NAME                       READY   STATUS    RESTARTS   AGE
+k8s-app                    1/1     Running   1          2m52s
 ```
+
+This is a great improvement!
+
+Now we face new challenges like being able to deliver updates or new features to our customers
+without downtime.
 
 ### Deployment
 
 ```bash
 kubectl apply -f k8s/deployment.yaml
+```
+
+```bash
+kubectl apply -f k8s/svc.yaml
 ```
 
 ## External dependencies
@@ -134,7 +169,7 @@ This may take several minutes before being ready
 
 ## Tear down
 
-Once you're done playing with the local k8s cluster just run this command to delete the cluster
+Once you're done playing with the local cluster just run this command to delete the cluster
 
 ```bash
 kind delete cluster --name local
